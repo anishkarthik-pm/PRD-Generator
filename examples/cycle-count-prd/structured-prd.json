@@ -1,0 +1,476 @@
+{
+  "prdId": "prd-cycle-count-retail-store-ops-lxk2m8n",
+  "title": "Cycle Count for Retail Store Operations",
+  "version": "v1.0",
+  "status": "draft",
+  "createdAt": "2024-01-20T10:00:00Z",
+  "updatedAt": "2024-01-20T10:00:00Z",
+  "owner": "Product Team - Inventory",
+
+  "objective": {
+    "statement": "Enable store associates to perform accurate and efficient inventory cycle counts using mobile devices, reducing count time by 40% and improving inventory accuracy to 98%.",
+    "businessValue": "Accurate inventory drives sales by reducing out-of-stocks and overstock situations. Cycle counts performed efficiently allow associates to spend more time serving customers while maintaining inventory integrity.",
+    "targetUsers": [
+      "Store Associates",
+      "Inventory Managers",
+      "Store Managers"
+    ],
+    "keyResults": [
+      "Reduce average count time by 40% compared to paper-based process",
+      "Achieve 98% inventory accuracy across all stores",
+      "Increase associate satisfaction with counting tools by 25%"
+    ]
+  },
+
+  "inScope": [
+    { "item": "Mobile-first cycle count initiation and execution", "rationale": "Primary use case for store associates" },
+    { "item": "Barcode scanning for product identification", "rationale": "Reduces errors and speeds up counting" },
+    { "item": "Real-time count submission and variance tracking", "rationale": "Enables immediate inventory updates" },
+    { "item": "Count assignment and progress tracking", "rationale": "Enables manager oversight and workload distribution" },
+    { "item": "Integration with existing inventory management system", "rationale": "Required for inventory updates" },
+    { "item": "Offline mode for areas with poor connectivity", "rationale": "Stores have inconsistent WiFi coverage" }
+  ],
+
+  "outOfScope": [
+    { "item": "Full physical inventory counts", "rationale": "Separate annual process with different requirements" },
+    { "item": "Automated reordering based on counts", "rationale": "Phase 2 feature dependent on ML model" },
+    { "item": "Cross-store inventory transfers", "rationale": "Handled by separate transfer module" },
+    { "item": "Third-party integrator access", "rationale": "Not required for MVP" }
+  ],
+
+  "assumptions": [
+    { "assumption": "Store associates have access to mobile devices with cameras", "risk": "medium", "mitigation": "Verify device availability in pilot stores" },
+    { "assumption": "Products have scannable barcodes (UPC/EAN)", "risk": "low", "mitigation": "Manual lookup fallback for unscanned items" },
+    { "assumption": "Backend inventory API is available and documented", "risk": "high", "mitigation": "Engage API team early, define contract" },
+    { "assumption": "Stores have intermittent WiFi coverage", "risk": "medium", "mitigation": "Offline mode with sync capability" }
+  ],
+
+  "brandContext": {
+    "brandName": "RetailOps",
+    "guidelinesVersion": "v1.0",
+    "uiConstraints": [
+      "No Modal: Modals disrupt workflow and are hard to dismiss on mobile. Use full-screen overlays or inline expansion instead.",
+      "No Hover state: Mobile devices do not support hover. Use press states and explicit tap targets.",
+      "No Carousel: Carousels hide content and have poor discoverability. Use vertical lists or grids.",
+      "No Infinite scroll: Store associates need to know their progress. Use pagination or load more buttons."
+    ],
+    "referenceFlows": [
+      "Shopify POS inventory count",
+      "Square for Retail stock management"
+    ]
+  },
+
+  "modules": [
+    {
+      "moduleId": "mod-1-count-assignment",
+      "moduleName": "Count Assignment",
+      "description": "Allows managers to create and assign cycle count tasks to associates, with scheduling and priority management.",
+      "features": [
+        {
+          "featureId": "feat-1-1-view-assigned-counts",
+          "featureName": "View Assigned Counts",
+          "description": "Associates can see their assigned cycle count tasks with due dates, locations, and estimated time.",
+          "priority": "P0",
+          "userFlows": [
+            {
+              "flowName": "View My Counts",
+              "description": "Associate views their assigned counts for the day",
+              "preconditions": ["User is logged in", "User has role: Store Associate or higher"],
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "Open the Cycle Count app",
+                  "expectedResult": "App launches and displays home screen with today's counts",
+                  "uiElement": "App icon / Home screen"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "View list of assigned counts sorted by priority",
+                  "expectedResult": "List displays counts with priority badges (High, Medium, Low) sorted descending",
+                  "uiElement": "Count list with priority indicators"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "See count details including location, estimated items, and due time",
+                  "expectedResult": "Each list item shows: Location name, item count estimate, due time, status badge",
+                  "uiElement": "List item card"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Select a count to begin",
+                  "expectedResult": "Navigate to count detail screen with Start Count button",
+                  "uiElement": "Tap on list item"
+                }
+              ],
+              "postconditions": ["Count detail screen displayed", "Start Count button enabled"]
+            }
+          ],
+          "edgeCases": [
+            { "scenario": "No counts assigned for the day", "expectedBehavior": "Show empty state with message 'No counts assigned today' and illustration", "priority": "medium" },
+            { "scenario": "Count assignment updated while viewing list", "expectedBehavior": "Pull-to-refresh updates list; toast notification for new assignments", "priority": "low" },
+            { "scenario": "Multiple counts with same due time", "expectedBehavior": "Secondary sort by location name alphabetically", "priority": "low" }
+          ],
+          "successMetrics": [
+            { "metric": "Time to view assigned counts", "target": "< 3 seconds", "measurementMethod": "App analytics - screen load time from app launch" },
+            { "metric": "Visibility of assigned counts", "target": "100%", "measurementMethod": "QA verification that all assigned counts appear in list" }
+          ],
+          "status": "draft"
+        },
+        {
+          "featureId": "feat-1-2-create-count-task",
+          "featureName": "Create Count Task",
+          "description": "Managers can create new cycle count tasks by selecting locations, products, or categories.",
+          "priority": "P1",
+          "userFlows": [
+            {
+              "flowName": "Create Location-Based Count",
+              "description": "Manager creates a count for a specific store location",
+              "preconditions": ["User has role: Inventory Manager or Store Manager"],
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "Navigate to Count Management",
+                  "expectedResult": "Count Management screen displays with list of existing counts and Create button",
+                  "uiElement": "Bottom navigation - Management tab"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "Tap 'Create New Count'",
+                  "expectedResult": "New Count form screen appears",
+                  "uiElement": "Floating action button"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "Select count type: Location-based",
+                  "expectedResult": "Location selection fields appear",
+                  "uiElement": "Segmented control: Location / Category / Product"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Choose store zone and aisle",
+                  "expectedResult": "Hierarchical picker shows Zone > Aisle > Section",
+                  "uiElement": "Bottom sheet with picker"
+                },
+                {
+                  "stepNumber": 5,
+                  "action": "Set due date and priority",
+                  "expectedResult": "Date picker and priority selector update form",
+                  "uiElement": "Date picker, Priority dropdown"
+                },
+                {
+                  "stepNumber": 6,
+                  "action": "Assign to associate or leave unassigned",
+                  "expectedResult": "Associate picker shows available team members; 'Unassigned' option available",
+                  "uiElement": "Bottom sheet with associate list"
+                },
+                {
+                  "stepNumber": 7,
+                  "action": "Review and confirm creation",
+                  "expectedResult": "Summary card shows all selections; Confirm button creates count; Success toast displays",
+                  "uiElement": "Review summary, Confirm button"
+                }
+              ],
+              "postconditions": ["Count created in system", "Assigned associate notified if applicable", "Count appears in management list"]
+            }
+          ],
+          "edgeCases": [
+            { "scenario": "Location already has pending count", "expectedBehavior": "Warning banner shown; option to add to existing count or create separate", "priority": "medium" },
+            { "scenario": "No associates available for assignment", "expectedBehavior": "Show 'No associates available' in picker; allow Unassigned selection", "priority": "low" },
+            { "scenario": "Invalid date selection (past date)", "expectedBehavior": "Date picker disables past dates; inline error if manually entered", "priority": "medium" }
+          ],
+          "status": "draft"
+        }
+      ]
+    },
+    {
+      "moduleId": "mod-2-count-execution",
+      "moduleName": "Count Execution",
+      "description": "Core counting functionality including product scanning, quantity entry, and count completion.",
+      "features": [
+        {
+          "featureId": "feat-2-1-scan-and-count",
+          "featureName": "Scan and Count",
+          "description": "Associates scan product barcodes and enter counted quantities with automatic variance calculation.",
+          "priority": "P0",
+          "userFlows": [
+            {
+              "flowName": "Standard Scan Flow",
+              "description": "Associate scans and counts products in sequence",
+              "preconditions": ["Count is assigned to user", "Count status is 'Not Started' or 'In Progress'"],
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "Tap 'Start Count' on assigned count",
+                  "expectedResult": "Camera viewfinder activates with scan overlay",
+                  "uiElement": "Primary button - Start Count"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "Point camera at product barcode",
+                  "expectedResult": "Viewfinder highlights barcode; scanning indicator pulses",
+                  "uiElement": "Camera viewfinder with barcode detection overlay"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "System identifies product and shows expected quantity",
+                  "expectedResult": "Product card slides up showing: Image, Name, SKU, Expected Qty",
+                  "uiElement": "Bottom sheet - Product info card"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Enter actual counted quantity using number pad",
+                  "expectedResult": "Large numeric input updates; Clear and Backspace available",
+                  "uiElement": "Number pad input"
+                },
+                {
+                  "stepNumber": 5,
+                  "action": "Tap 'Confirm' to record count",
+                  "expectedResult": "Count saved with checkmark animation; ready for next scan",
+                  "uiElement": "Primary button - Confirm"
+                },
+                {
+                  "stepNumber": 6,
+                  "action": "System shows variance if count differs from expected",
+                  "expectedResult": "Variance badge shows +/- difference; color coded (green if match, amber if small variance, red if large)",
+                  "uiElement": "Variance indicator badge"
+                },
+                {
+                  "stepNumber": 7,
+                  "action": "Repeat for next product or tap 'Complete Section'",
+                  "expectedResult": "Camera reactivates for next scan; or completion confirmation if done",
+                  "uiElement": "Camera viewfinder or Complete button"
+                }
+              ],
+              "postconditions": ["Counts recorded in local database", "Progress updated", "Variance calculated"]
+            },
+            {
+              "flowName": "Manual Product Lookup",
+              "description": "Associate finds product without barcode scan",
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "Tap 'Search Product' during count",
+                  "expectedResult": "Search screen appears with keyboard",
+                  "uiElement": "Secondary button - Search icon"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "Enter product name, SKU, or description",
+                  "expectedResult": "Results update as user types (debounced)",
+                  "uiElement": "Search input with live results"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "Select correct product from results",
+                  "expectedResult": "Product detail card appears same as scanned product",
+                  "uiElement": "Search result list item"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Enter counted quantity",
+                  "expectedResult": "Number pad input with quantity",
+                  "uiElement": "Number pad"
+                },
+                {
+                  "stepNumber": 5,
+                  "action": "Confirm and continue",
+                  "expectedResult": "Count recorded; return to scan mode",
+                  "uiElement": "Confirm button"
+                }
+              ]
+            }
+          ],
+          "edgeCases": [
+            { "scenario": "Barcode not recognized", "expectedBehavior": "Show 'Barcode not found' message; offer manual search option", "priority": "high" },
+            { "scenario": "Product not in expected location list", "expectedBehavior": "Allow counting with 'Unexpected Item' flag; log for review", "priority": "medium" },
+            { "scenario": "Damaged barcode", "expectedBehavior": "Multiple scan attempts, then manual entry prompt", "priority": "medium" },
+            { "scenario": "Multiple products with similar appearance", "expectedBehavior": "Product card shows distinguishing details; comparison view available", "priority": "low" },
+            { "scenario": "Network timeout during submission", "expectedBehavior": "Queue locally; show pending indicator; retry automatically", "priority": "critical" }
+          ],
+          "successMetrics": [
+            { "metric": "Scan success rate", "target": "> 95%", "measurementMethod": "Successful scans / total scan attempts" },
+            { "metric": "Average time per item", "target": "< 5 seconds", "measurementMethod": "Time from scan to confirm per item" },
+            { "metric": "Manual lookup rate", "target": "< 5%", "measurementMethod": "Manual lookups / total items counted" }
+          ],
+          "status": "draft"
+        },
+        {
+          "featureId": "feat-2-2-offline-counting",
+          "featureName": "Offline Counting",
+          "description": "Allow counting to continue when network is unavailable, with automatic sync when connectivity returns.",
+          "priority": "P0",
+          "userFlows": [
+            {
+              "flowName": "Offline Count Sync",
+              "description": "System handles offline counting and synchronization",
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "System detects network unavailable",
+                  "expectedResult": "Automatic detection via network status API",
+                  "uiElement": "System background process"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "Display offline indicator in header",
+                  "expectedResult": "Orange 'Offline' badge appears in header bar",
+                  "uiElement": "Header status indicator"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "Continue counting with local storage",
+                  "expectedResult": "All counting functions work normally; data stored locally",
+                  "uiElement": "Normal count UI"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Queue count submissions locally",
+                  "expectedResult": "Pending count badge shows number of queued items",
+                  "uiElement": "Queue indicator badge"
+                },
+                {
+                  "stepNumber": 5,
+                  "action": "When network returns, show sync indicator",
+                  "expectedResult": "Blue 'Syncing' badge replaces offline badge; progress indicator",
+                  "uiElement": "Header sync indicator"
+                },
+                {
+                  "stepNumber": 6,
+                  "action": "Automatically sync queued counts",
+                  "expectedResult": "Background sync processes queue in order",
+                  "uiElement": "Background process"
+                },
+                {
+                  "stepNumber": 7,
+                  "action": "Confirm sync completion with success message",
+                  "expectedResult": "Green checkmark; 'All counts synced' toast message",
+                  "uiElement": "Success toast notification"
+                }
+              ]
+            }
+          ],
+          "edgeCases": [
+            { "scenario": "Large number of queued counts (>100)", "expectedBehavior": "Batch sync with progress indicator; allow background completion", "priority": "medium" },
+            { "scenario": "Conflict with server-side updates", "expectedBehavior": "Server timestamp wins; local changes marked for review", "priority": "high" },
+            { "scenario": "App closed before sync completes", "expectedBehavior": "Resume sync on next app open; no data loss", "priority": "critical" }
+          ],
+          "successMetrics": [
+            { "metric": "Offline data integrity", "target": "Zero data loss", "measurementMethod": "Audit of offline counts vs synced counts" },
+            { "metric": "Sync completion time", "target": "< 30 seconds for 100 items", "measurementMethod": "Time from network recovery to sync complete" }
+          ],
+          "status": "draft"
+        }
+      ]
+    },
+    {
+      "moduleId": "mod-3-variance-management",
+      "moduleName": "Variance Management",
+      "description": "Track and manage inventory variances discovered during counts.",
+      "features": [
+        {
+          "featureId": "feat-3-1-variance-review",
+          "featureName": "Variance Review",
+          "description": "Review and investigate significant inventory variances before finalizing counts.",
+          "priority": "P1",
+          "userFlows": [
+            {
+              "flowName": "Review High Variance Items",
+              "description": "Associate reviews items with significant variance",
+              "steps": [
+                {
+                  "stepNumber": 1,
+                  "action": "After count completion, view variance summary",
+                  "expectedResult": "Variance summary screen shows: Total items, Items with variance, Total variance value",
+                  "uiElement": "Variance summary card"
+                },
+                {
+                  "stepNumber": 2,
+                  "action": "See list of items with variance > threshold",
+                  "expectedResult": "List shows items sorted by variance magnitude; threshold configurable",
+                  "uiElement": "Variance item list"
+                },
+                {
+                  "stepNumber": 3,
+                  "action": "Select item to review details",
+                  "expectedResult": "Detail view shows: Expected, Counted, Variance, Last count date, Recent transactions",
+                  "uiElement": "Variance detail card"
+                },
+                {
+                  "stepNumber": 4,
+                  "action": "Option to recount specific item",
+                  "expectedResult": "Recount mode for single item; updates count on confirmation",
+                  "uiElement": "Recount button"
+                },
+                {
+                  "stepNumber": 5,
+                  "action": "Add variance reason from predefined list",
+                  "expectedResult": "Reason picker with options: Theft, Damage, Receiving Error, Data Entry Error, Unknown",
+                  "uiElement": "Reason picker bottom sheet"
+                },
+                {
+                  "stepNumber": 6,
+                  "action": "Submit final count with variance notes",
+                  "expectedResult": "Count finalized; variance logged with reason; notification to manager if threshold exceeded",
+                  "uiElement": "Submit button"
+                }
+              ]
+            }
+          ],
+          "edgeCases": [
+            { "scenario": "All items have variance", "expectedBehavior": "Warning banner suggests possible systemic issue; option to flag entire count for review", "priority": "medium" },
+            { "scenario": "Variance due to recent transactions", "expectedBehavior": "Show recent transaction list; option to exclude from variance calculation", "priority": "medium" },
+            { "scenario": "Manager override required for large variances", "expectedBehavior": "Block submission; notify manager for approval; show pending approval status", "priority": "high" }
+          ],
+          "successMetrics": [
+            { "metric": "Variance resolution rate", "target": "> 90%", "measurementMethod": "Variances with reason / total variances" },
+            { "metric": "Average variance investigation time", "target": "< 2 minutes per item", "measurementMethod": "Time from variance view to reason submission" }
+          ],
+          "status": "draft"
+        }
+      ]
+    }
+  ],
+
+  "versionHistory": [
+    {
+      "version": "v1.0",
+      "date": "2024-01-20T10:00:00Z",
+      "changedBy": "Product Team - Inventory",
+      "summary": "Initial PRD creation for Cycle Count feature",
+      "details": [
+        "Created 3 modules: Count Assignment, Count Execution, Variance Management",
+        "Defined 5 features with full user flows",
+        "Applied RetailOps brand guidelines v1.0"
+      ]
+    }
+  ],
+
+  "globalSuccessMetrics": [
+    { "metric": "Count time reduction", "target": "40% reduction vs paper process", "measurementMethod": "A/B comparison with control stores" },
+    { "metric": "Inventory accuracy", "target": "98% accuracy", "measurementMethod": "Variance rate across all counts" },
+    { "metric": "Associate adoption", "target": "90% of associates using app within 30 days", "measurementMethod": "Active users / total associates" }
+  ],
+
+  "technicalNotes": {
+    "integrations": [
+      "Inventory Management System API (REST)",
+      "User Authentication (SSO)",
+      "Push Notification Service"
+    ],
+    "constraints": [
+      "Must support iOS 14+ and Android 10+",
+      "Offline storage limit: 1000 items",
+      "Camera must support barcode scanning at 12 inches"
+    ],
+    "securityConsiderations": [
+      "All data encrypted at rest and in transit",
+      "Session timeout after 15 minutes of inactivity",
+      "Audit log for all inventory modifications"
+    ],
+    "performanceRequirements": [
+      "App launch to ready: < 3 seconds",
+      "Barcode scan to result: < 500ms",
+      "Offline sync queue: handle 1000+ items"
+    ]
+  }
+}

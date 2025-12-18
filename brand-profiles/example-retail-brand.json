@@ -1,0 +1,216 @@
+{
+  "brandName": "RetailOps",
+  "version": "v1.0",
+  "lastUpdated": "2024-01-15T00:00:00Z",
+  "owner": "Brand & Design Team",
+
+  "designPrinciples": [
+    {
+      "name": "Clarity First",
+      "description": "Every screen should have a single, clear purpose. Users should understand what to do within 3 seconds.",
+      "priority": "critical",
+      "examples": [
+        "One primary action per screen",
+        "Clear visual hierarchy",
+        "Descriptive button labels"
+      ]
+    },
+    {
+      "name": "Speed Over Polish",
+      "description": "Store associates work fast. Minimize taps, optimize for one-handed use, and prioritize speed over visual flourishes.",
+      "priority": "critical",
+      "examples": [
+        "Large touch targets",
+        "Minimal multi-step flows",
+        "Quick scan-and-go patterns"
+      ]
+    },
+    {
+      "name": "Error Prevention",
+      "description": "Prevent errors rather than just reporting them. Use constraints, defaults, and confirmations for irreversible actions.",
+      "priority": "high",
+      "examples": [
+        "Smart defaults based on context",
+        "Inline validation",
+        "Confirmation for destructive actions"
+      ]
+    },
+    {
+      "name": "Mobile-Native Experience",
+      "description": "Design for mobile devices first. All interactions must work on a 5-inch screen held in one hand.",
+      "priority": "critical"
+    }
+  ],
+
+  "colorTokens": [
+    {
+      "name": "Primary Blue",
+      "hex": "#1E40AF",
+      "usage": "primary",
+      "contrastRatio": 7.5
+    },
+    {
+      "name": "Surface White",
+      "hex": "#FFFFFF",
+      "usage": "background"
+    },
+    {
+      "name": "Text Dark",
+      "hex": "#1F2937",
+      "usage": "text"
+    },
+    {
+      "name": "Success Green",
+      "hex": "#059669",
+      "usage": "success"
+    },
+    {
+      "name": "Warning Amber",
+      "hex": "#D97706",
+      "usage": "warning"
+    },
+    {
+      "name": "Error Red",
+      "hex": "#DC2626",
+      "usage": "error"
+    },
+    {
+      "name": "Secondary Gray",
+      "hex": "#6B7280",
+      "usage": "secondary"
+    }
+  ],
+
+  "typographyTokens": [
+    {
+      "name": "Heading",
+      "fontFamily": "Inter",
+      "weights": [600, 700],
+      "usage": "heading",
+      "fallback": "system-ui, sans-serif"
+    },
+    {
+      "name": "Body",
+      "fontFamily": "Inter",
+      "weights": [400, 500],
+      "usage": "body",
+      "fallback": "system-ui, sans-serif"
+    },
+    {
+      "name": "Button",
+      "fontFamily": "Inter",
+      "weights": [500, 600],
+      "usage": "button",
+      "fallback": "system-ui, sans-serif"
+    },
+    {
+      "name": "Mono",
+      "fontFamily": "JetBrains Mono",
+      "weights": [400, 500],
+      "usage": "mono",
+      "fallback": "monospace"
+    }
+  ],
+
+  "spacingTokens": [
+    { "name": "xs", "value": "4px", "usage": "Tight spacing between related elements" },
+    { "name": "sm", "value": "8px", "usage": "Default internal padding" },
+    { "name": "md", "value": "16px", "usage": "Standard component spacing" },
+    { "name": "lg", "value": "24px", "usage": "Section separation" },
+    { "name": "xl", "value": "32px", "usage": "Major section breaks" }
+  ],
+
+  "uiPatternConstraints": [
+    {
+      "pattern": "Modal",
+      "allowed": false,
+      "reason": "Modals disrupt workflow and are hard to dismiss on mobile. Use full-screen overlays or inline expansion instead.",
+      "alternatives": ["Full-screen overlay", "Inline expansion", "Bottom sheet"]
+    },
+    {
+      "pattern": "Hover state",
+      "allowed": false,
+      "reason": "Mobile devices do not support hover. Use press states and explicit tap targets.",
+      "alternatives": ["Tap state", "Press and hold", "Explicit buttons"]
+    },
+    {
+      "pattern": "Carousel",
+      "allowed": false,
+      "reason": "Carousels hide content and have poor discoverability. Use vertical lists or grids.",
+      "alternatives": ["Vertical list", "Grid layout", "Tabbed sections"]
+    },
+    {
+      "pattern": "Infinite scroll",
+      "allowed": false,
+      "reason": "Store associates need to know their progress. Use pagination or load more buttons.",
+      "alternatives": ["Pagination", "Load more button", "Virtual list with count"]
+    },
+    {
+      "pattern": "Bottom sheet",
+      "allowed": true,
+      "reason": "Bottom sheets are mobile-native and easy to dismiss."
+    },
+    {
+      "pattern": "Pull to refresh",
+      "allowed": true,
+      "reason": "Familiar mobile pattern for refreshing lists."
+    },
+    {
+      "pattern": "Swipe actions",
+      "allowed": true,
+      "reason": "Efficient for list item actions, but must have alternative explicit buttons."
+    },
+    {
+      "pattern": "Floating action button",
+      "allowed": true,
+      "reason": "Good for primary actions, limited to one per screen."
+    }
+  ],
+
+  "componentConstraints": [
+    {
+      "component": "Primary Button",
+      "maxPerScreen": 1,
+      "requiredContext": ["Clear action label", "Sufficient contrast"],
+      "forbiddenWith": ["Another primary button"]
+    },
+    {
+      "component": "Toast notification",
+      "maxPerScreen": 1,
+      "requiredContext": ["Dismissible", "Auto-dismiss after 3s for success"]
+    },
+    {
+      "component": "Form input",
+      "requiredContext": ["Label", "Error state", "Touch target minimum 44px"]
+    }
+  ],
+
+  "referenceProducts": [
+    {
+      "name": "Shopify POS",
+      "url": "https://www.shopify.com/pos",
+      "relevantPatterns": ["Quick sale flow", "Product search", "Inventory management"],
+      "notes": "Good reference for retail checkout flows"
+    },
+    {
+      "name": "Square for Retail",
+      "url": "https://squareup.com/us/en/point-of-sale/retail",
+      "relevantPatterns": ["Inventory counts", "Stock management", "Barcode scanning"],
+      "notes": "Reference for inventory workflows"
+    }
+  ],
+
+  "platformConstraints": {
+    "mobileFirst": true,
+    "minTouchTargetSize": "44px",
+    "maxContentWidth": "480px",
+    "supportedBreakpoints": ["320px", "375px", "414px", "480px"]
+  },
+
+  "accessibilityRequirements": {
+    "minContrastRatio": 4.5,
+    "requireAltText": true,
+    "requireAriaLabels": true,
+    "focusIndicatorRequired": true
+  }
+}
